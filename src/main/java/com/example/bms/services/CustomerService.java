@@ -53,6 +53,10 @@ public class CustomerService {
         return null;
     }
     
+    public Optional<Customer> getCustomerById(Long customerId) {
+        return customerRepository.findById(customerId);
+    }
+    
     public Customer updateCustomerDetails(Long customerId, Customer customerUpdate) {
         Optional<Customer> existingCustomerOpt = customerRepository.findById(customerId);
         if (existingCustomerOpt.isPresent()) {

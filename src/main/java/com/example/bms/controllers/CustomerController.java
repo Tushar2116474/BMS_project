@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 
 @RestController
 @RequestMapping
@@ -318,6 +319,71 @@ public class CustomerController {
         } catch (Exception e) {
             response.put("success", false);
             response.put("message", "Logout failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // GET CUSTOMER DETAILS BY ID
+    @Operation(summary = "Get customer details", description = "Retrieves customer details by ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Customer details retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Customer not found")
+    })
+    @GetMapping("/customers/{customerId}")
+    public ResponseEntity<Map<String, Object>> getCustomerById(@PathVariable Long customerId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<Customer> customerOpt = customerService.getCustomerById(customerId);
+            if (customerOpt.isPresent()) {
+                Customer customer = customerOpt.get();
+                response.put("success", true);
+                response.put("customer", customer);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Customer not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // GET CUSTOMER ACCOUNT DETAILS
+    @Operation(summary = "Get customer account details", description = "Retrieves account information for a customer")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Account details retrieved successfully"),
+        @ApiResponse(responseCode = "404", description = "Customer not found")
+    })
+    @GetMapping("/customers/{customerId}/account")
+    public ResponseEntity<Map<String, Object>> getCustomerAccount(@PathVariable Long customerId) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Optional<Customer> customerOpt = customerService.getCustomerById(customerId);
+            if (customerOpt.isPresent()) {
+                Customer customer = customerOpt.get();
+                
+                // Create account info object
+                Map<String, Object> accountInfo = new HashMap<>();
+                accountInfo.put("accountNumber", customer.getAccountNumber());
+                accountInfo.put("accountType", customer.getAccountType());
+                accountInfo.put("balance", 10000.0); // Mock balance for demo
+                accountInfo.put("customerName", customer.getName());
+                accountInfo.put("customerId", customer.getId());
+                
+                response.put("success", true);
+                response.put("account", accountInfo);
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("success", false);
+                response.put("message", "Customer not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
